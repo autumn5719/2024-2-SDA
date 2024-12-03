@@ -1,0 +1,53 @@
+import pandas as pd
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+
+import matplotlib as mpl
+print(mpl.matplotlib_fname())
+print(mpl.get_cachedir())
+mpl.rcParams['font.family'] = 'NanumGothic'
+
+file = r"C:\Users\autum\OneDrive\바탕 화면\2-2\통계적데이터분석\data\Student Attitude and Behavior.csv"
+data = pd.read_csv(file)
+data.head()
+
+plt.figure(figsize = (10, 6))
+sns.scatterplot(data, x = "social media & video", y = "college mark")
+plt.title("소셜 미디어/비디오 사용 시간과 대학 점수 간의 산점도")
+plt.xlabel("하루 소셜 미디어 사용 시간")
+plt.ylabel("최종 점수")
+plt.axhline(y=data["college mark"].mean(), color='r', linestyle='--', label='평균 점수')
+plt.legend()
+plt.show()
+
+def convert_hours(time):
+    time = time.strip()
+    if "0 Minute" == time :
+        return 0
+    elif "1 - 30 Minute" == time:
+        return 0.25
+    elif "30 - 60 Minute" == time:
+        return 0.75
+    elif "1 - 1.30 hour" == time:
+        return 1.25
+    elif "1.30 - 2 hour" == time:
+        return 1.75
+    elif "More than 2 hour" == time:
+        return 2.25
+        
+data["social media & video hours"] = data["social media & video"].apply(convert_hours)
+
+median = 1
+low_use = data[data["social media & video hours"] <= median]["college mark"]
+high_use = data[data["social media & video hours"] > median]["college mark"]
+
+from scipy.stats import bartlett
+stat, p = bartlett(low_use, high_use)
+print(stat, p) 
+#두 데이터의 분산이 비슷하다
+
+stats.ttest_ind(low_use, high_use, equal_var = True)
+#low_use의 평균이 high_use의 평균보다 작다
+#그러나 p값이 높으므로 평균 차이는 우연에 의한 것이다.
